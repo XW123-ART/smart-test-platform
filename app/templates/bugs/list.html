@@ -1,0 +1,257 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- 页面标题和操作按钮 -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold">
+            <i class="bi bi-bug me-2"></i>缺陷管理
+        </h2>
+        <a href="{{ url_for('bugs.create_bug') }}" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-1"></i>新建缺陷
+        </a>
+    </div>
+    
+    <!-- 统计卡片 -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                缺陷总数
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_bugs }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-bug-fill text-primary fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                新建缺陷
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ new_bugs }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-clock-history text-warning fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                处理中
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ in_progress_bugs }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-gear text-info fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                已修复
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ fixed_bugs }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-check-circle text-success fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 搜索表单 -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="bi bi-search me-1"></i>筛选缺陷
+        </div>
+        <div class="card-body">
+            <form method="GET" action="{{ url_for('bugs.bug_list') }}" class="row g-3">
+                <div class="col-md-4">
+                    {{ form.keyword.label(class="form-label") }}
+                    {{ form.keyword(class="form-control", placeholder="输入标题或描述关键词") }}
+                </div>
+                <div class="col-md-3">
+                    {{ form.status.label(class="form-label") }}
+                    {{ form.status(class="form-select") }}
+                </div>
+                <div class="col-md-3">
+                    {{ form.severity.label(class="form-label") }}
+                    {{ form.severity(class="form-select") }}
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-search me-1"></i>搜索
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- 缺陷列表 -->
+    <div class="card">
+        <div class="card-header">
+            <i class="bi bi-list-ul me-1"></i>缺陷列表
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th scope="col">ID</th>
+                            <th scope="col">标题</th>
+                            <th scope="col">状态</th>
+                            <th scope="col">严重程度</th>
+                            <th scope="col">优先级</th>
+                            <th scope="col">创建人</th>
+                            <th scope="col">创建时间</th>
+                            <th scope="col">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for bug in bugs %}
+                        <tr>
+                            <th scope="row">#{{ bug.id }}</th>
+                            <td>
+                                <a href="{{ url_for('bugs.bug_detail', bug_id=bug.id) }}" class="text-decoration-none">
+                                    {{ bug.title }}
+                                </a>
+                            </td>
+                            <td>
+                                {% set status_classes = {
+                                    'new': 'bg-secondary',
+                                    'in_progress': 'bg-primary',
+                                    'fixed': 'bg-success',
+                                    'closed': 'bg-dark',
+                                    'reopened': 'bg-warning'
+                                } %}
+                                <span class="badge {{ status_classes.get(bug.status, 'bg-secondary') }}">
+                                    {{ bug.get_status_display() }}
+                                </span>
+                            </td>
+                            <td>
+                                {% set severity_classes = {
+                                    'critical': 'bg-danger',
+                                    'high': 'bg-warning',
+                                    'medium': 'bg-info',
+                                    'low': 'bg-secondary'
+                                } %}
+                                <span class="badge {{ severity_classes.get(bug.severity, 'bg-secondary') }}">
+                                    {{ bug.get_severity_display() }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge bg-light text-dark border">
+                                    {{ bug.get_priority_display() }}
+                                </span>
+                            </td>
+                            <td>{{ bug.creator.username if bug.creator else 'N/A' }}</td>
+                            <td>{{ bug.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td>
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <a href="{{ url_for('bugs.bug_detail', bug_id=bug.id) }}" 
+                                       class="btn btn-outline-primary">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    {% if bug.created_by == current_user.id %}
+                                    <a href="{{ url_for('bugs.edit_bug', bug_id=bug.id) }}" 
+                                       class="btn btn-outline-warning">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="8" class="text-center py-4 text-muted">
+                                <i class="bi bi-inbox display-6 d-block mb-2"></i>
+                                暂无缺陷数据
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- 分页 -->
+            {% if pagination and pagination.pages > 1 %}
+            <nav aria-label="分页导航">
+                <ul class="pagination justify-content-center">
+                    {% if pagination.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('bugs.bug_list', page=pagination.prev_num, **request.args) }}">
+                            上一页
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">上一页</span>
+                    </li>
+                    {% endif %}
+                    
+                    {% for page_num in pagination.iter_pages(left_edge=2, left_current=2, right_current=3, right_edge=2) %}
+                        {% if page_num %}
+                            {% if page_num == pagination.page %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ page_num }}</span>
+                            </li>
+                            {% else %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('bugs.bug_list', page=page_num, **request.args) }}">
+                                    {{ page_num }}
+                                </a>
+                            </li>
+                            {% endif %}
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">...</span>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if pagination.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('bugs.bug_list', page=pagination.next_num, **request.args) }}">
+                            下一页
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">下一页</span>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

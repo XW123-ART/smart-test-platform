@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}智能测试平台 - 首页{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- 英雄区域 -->
+    <div class="row align-items-center mb-5">
+        <div class="col-lg-6">
+            <h1 class="display-4 fw-bold mb-4">
+                <span class="text-primary">智能测试平台</span><br>
+                让测试更智能、更高效
+            </h1>
+            <p class="lead mb-4">
+                集成AI能力的现代化测试管理工具，帮助测试团队提升缺陷管理效率，自动化生成测试用例，让质量保障更轻松。
+            </p>
+            <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                <a href="#" class="btn btn-primary btn-lg px-4 me-md-2">
+                    <i class="bi bi-person-plus"></i> 免费注册
+                </a>
+                <a href="#" class="btn btn-primary btn-lg px-4">
+                    <i class="bi bi-box-arrow-in-right"></i> 立即登录
+                </a>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-lg rounded-5 overflow-hidden">
+                <img src="https://images.unsplash.com/photo-1555949963-aa79dcee981c?w=600&h=400&fit=crop&auto=format" 
+                     class="img-fluid w-100 h-100 object-fit-cover" 
+                     alt="测试平台界面预览">
+            </div>
+        </div>
+    </div>
+
+    <!-- 功能特性 -->
+    <div class="row mb-5">
+        <div class="col-12 text-center mb-5">
+            <h2 class="fw-bold">核心功能</h2>
+            <p class="text-muted">一站式解决测试管理难题</p>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 border-0 shadow-sm hover-shadow">
+                <div class="card-body text-center p-4">
+                    <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex p-3 mb-3">
+                        <i class="bi bi-bug text-primary fs-1"></i>
+                    </div>
+                    <h4 class="card-title">智能缺陷管理</h4>
+                    <p class="card-text text-muted">
+                        AI自动优化缺陷描述，智能分类和去重，提升缺陷处理效率50%以上。
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 border-0 shadow-sm hover-shadow">
+                <div class="card-body text-center p-4">
+                    <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex p-3 mb-3">
+                        <i class="bi bi-check-square text-success fs-1"></i>
+                    </div>
+                    <h4 class="card-title">测试用例管理</h4>
+                    <p class="card-text text-muted">
+                        可视化用例设计，与缺陷自动关联，支持导入导出，用例复用率提升30%。
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 border-0 shadow-sm hover-shadow">
+                <div class="card-body text-center p-4">
+                    <div class="bg-info bg-opacity-10 rounded-circle d-inline-flex p-3 mb-3">
+                        <i class="bi bi-robot text-info fs-1"></i>
+                    </div>
+                    <h4 class="card-title">AI智能辅助</h4>
+                    <p class="card-text text-muted">
+                        基于大模型的测试用例生成、缺陷分析、回归测试建议，让测试更智能。
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 技术栈展示 -->
+    <div class="row bg-light rounded-3 p-5 mb-5">
+        <div class="col-12 text-center mb-4">
+            <h3 class="fw-bold">技术栈</h3>
+            <p class="text-muted">现代化技术组合，稳定高效</p>
+        </div>
+        <div class="col text-center">
+            <div class="d-flex flex-wrap justify-content-center gap-4">
+                <span class="badge bg-primary py-2 px-3 fs-6">Flask</span>
+                <span class="badge bg-success py-2 px-3 fs-6">SQLAlchemy</span>
+                <span class="badge bg-info py-2 px-3 fs-6">OpenAI API</span>
+                <span class="badge bg-warning py-2 px-3 fs-6">Bootstrap 5</span>
+                <span class="badge bg-danger py-2 px-3 fs-6">Docker</span>
+                <span class="badge bg-secondary py-2 px-3 fs-6">GitHub Actions</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 数据统计 -->
+    <div class="row text-center mb-5">
+        <div class="col-md-3 mb-3">
+            <h3 class="display-6 fw-bold text-primary">500+</h3>
+            <p class="text-muted">缺陷智能处理</p>
+        </div>
+        <div class="col-md-3 mb-3">
+            <h3 class="display-6 fw-bold text-success">3000+</h3>
+            <p class="text-muted">测试用例管理</p>
+        </div>
+        <div class="col-md-3 mb-3">
+            <h3 class="display-6 fw-bold text-info">85%</h3>
+            <p class="text-muted">测试效率提升</p>
+        </div>
+        <div class="col-md-3 mb-3">
+            <h3 class="display-6 fw-bold text-warning">99.9%</h3>
+            <p class="text-muted">平台可用性</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

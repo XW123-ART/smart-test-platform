@@ -1,0 +1,357 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- 页面标题 -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-0">
+                <i class="bi bi-plus-circle me-2"></i>创建新测试用例
+            </h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item">
+                        <a href="{{ url_for('test_cases.test_case_list') }}">测试用例列表</a>
+                    </li>
+                    <li class="breadcrumb-item active">创建用例</li>
+                </ol>
+            </nav>
+        </div>
+        <a href="{{ url_for('test_cases.test_case_list') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>返回列表
+        </a>
+    </div>
+    
+    <!-- 创建表单 -->
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">测试用例信息</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('test_cases.create_test_case') }}">
+                        {{ form.hidden_tag() }}
+                        
+                        <!-- Flash消息 -->
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                            {% if messages %}
+                                {% for category, message in messages %}
+                                    <div class="alert alert-{{ category if category != 'message' else 'info' }} 
+                                                alert-dismissible fade show mb-4">
+                                        {{ message }}
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                        {% endwith %}
+                        
+                        <!-- 表单验证错误 -->
+                        {% if form.errors %}
+                            <div class="alert alert-danger alert-dismissible fade show mb-4">
+                                <strong>表单验证失败：</strong>
+                                <ul class="mb-0">
+                                    {% for field, errors in form.errors.items() %}
+                                        {% for error in errors %}
+                                            <li>{{ error }}</li>
+                                        {% endfor %}
+                                    {% endfor %}
+                                </ul>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endif %}
+                        
+                        <!-- 标题 -->
+                        <div class="mb-4">
+                            {{ form.title.label(class="form-label fw-bold") }}
+                            {{ form.title(class="form-control form-control-lg" + 
+                                       (" is-invalid" if form.title.errors else ""),
+                                       id="testCaseTitle") }}
+                            {% if form.title.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.title.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- 描述 -->
+                        <div class="mb-4">
+                            {{ form.description.label(class="form-label fw-bold") }}
+                            {{ form.description(class="form-control" + 
+                                             (" is-invalid" if form.description.errors else ""),
+                                             id="testCaseDescription") }}
+                            {% if form.description.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.description.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="row">
+                            <!-- 优先级 -->
+                            <div class="col-md-6 mb-4">
+                                {{ form.priority.label(class="form-label fw-bold") }}
+                                {{ form.priority(class="form-select" + 
+                                               (" is-invalid" if form.priority.errors else "")) }}
+                                {% if form.priority.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.priority.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- 状态 -->
+                            <div class="col-md-6 mb-4">
+                                {{ form.status.label(class="form-label fw-bold") }}
+                                {{ form.status(class="form-select" + 
+                                             (" is-invalid" if form.status.errors else "")) }}
+                                {% if form.status.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.status.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <!-- 测试类型 -->
+                            <div class="col-md-6 mb-4">
+                                {{ form.test_type.label(class="form-label fw-bold") }}
+                                {{ form.test_type(class="form-select" + 
+                                               (" is-invalid" if form.test_type.errors else "")) }}
+                                {% if form.test_type.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.test_type.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- 模块 -->
+                            <div class="col-md-6 mb-4">
+                                {{ form.module.label(class="form-label fw-bold") }}
+                                {{ form.module(class="form-control" + 
+                                             (" is-invalid" if form.module.errors else "")) }}
+                                {% if form.module.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.module.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    <div class="form-text">例如：登录模块、支付模块、商品模块</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- 前置条件 -->
+                        <div class="mb-4">
+                            {{ form.preconditions.label(class="form-label fw-bold") }}
+                            {{ form.preconditions(class="form-control" + 
+                                                 (" is-invalid" if form.preconditions.errors else "")) }}
+                            {% if form.preconditions.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.preconditions.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <div class="form-text">执行此测试用例前需要满足的条件</div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- 测试步骤 -->
+                        <div class="mb-4">
+                            {{ form.steps.label(class="form-label fw-bold") }}
+                            {{ form.steps(class="form-control" + 
+                                         (" is-invalid" if form.steps.errors else "")) }}
+                            {% if form.steps.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.steps.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <div class="form-text">每行一个步骤，步骤要清晰明确。例如：<br>1. 打开登录页面<br>2. 输入用户名和密码<br>3. 点击登录按钮</div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- 预期结果 -->
+                        <div class="mb-4">
+                            {{ form.expected_result.label(class="form-label fw-bold") }}
+                            {{ form.expected_result(class="form-control" + 
+                                                  (" is-invalid" if form.expected_result.errors else "")) }}
+                            {% if form.expected_result.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.expected_result.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <div class="form-text">描述期望的结果。例如：成功登录，跳转到首页</div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- 提交按钮 -->
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                            <a href="{{ url_for('test_cases.test_case_list') }}" class="btn btn-secondary me-md-2">
+                                取消
+                            </a>
+                            <button type="button" class="btn btn-outline-primary me-md-2" id="aiImproveBtn">
+                                <i class="bi bi-magic"></i> AI优化
+                            </button>
+                            {{ form.submit(class="btn btn-primary px-5") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 在页面底部添加JavaScript -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const aiImproveBtn = document.getElementById('aiImproveBtn');
+    const descriptionField = document.getElementById('testCaseDescription');
+    const titleField = document.getElementById('testCaseTitle');
+    const priorityField = document.getElementById('{{ form.priority.id }}');
+    
+    // 通用AI调用函数
+    function callAI(url, data, btnElement, successCallback) {
+        // 显示加载状态
+        const originalText = btnElement.innerHTML;
+        btnElement.disabled = true;
+        btnElement.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>AI生成中...';
+        
+        // 调用AI API
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrf_token]').value
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => {
+            // 检查响应状态
+            if (!response.ok) {
+                return response.text().then(text => {
+                    throw new Error(`HTTP ${response.status}: ${text.substring(0, 100)}...`);
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.error) {
+                throw new Error(data.error);
+            }
+            
+            // 调用成功回调
+            successCallback(data);
+            
+            // 显示成功消息
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-success alert-dismissible fade show mt-3';
+            alertDiv.innerHTML = `
+                <i class="bi bi-check-circle me-1"></i>AI生成完成！
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            btnElement.parentNode.parentNode.appendChild(alertDiv);
+        })
+        .catch(error => {
+            // 显示错误消息
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-danger alert-dismissible fade show mt-3';
+            alertDiv.innerHTML = `
+                <i class="bi bi-exclamation-triangle me-1"></i>AI生成失败：${error.message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            btnElement.parentNode.parentNode.appendChild(alertDiv);
+        })
+        .finally(() => {
+            // 恢复按钮状态
+            btnElement.disabled = false;
+            btnElement.innerHTML = originalText;
+        });
+    }
+    
+    // AI优化
+    if (aiImproveBtn && descriptionField) {
+        aiImproveBtn.addEventListener('click', function() {
+            const description = descriptionField.value.trim();
+            if (!description) {
+                alert('请输入测试用例描述');
+                return;
+            }
+            
+            // 直接获取模块字段的最新值
+            const module = document.getElementById('module').value;
+            
+            callAI('/api/ai/improve-test-case', {
+                description: description,
+                module: module
+            }, aiImproveBtn, function(data) {
+                // 填充优化后的内容
+                if (data.improved_title) {
+                    titleField.value = data.improved_title;
+                }
+                
+                if (data.improved_description) {
+                    descriptionField.value = data.improved_description;
+                }
+                
+                if (data.improved_preconditions) {
+                    const preconditionsField = document.getElementById('preconditions');
+                    if (preconditionsField) {
+                        preconditionsField.value = data.improved_preconditions;
+                    }
+                }
+                
+                if (data.improved_steps && data.improved_steps.length > 0) {
+                    const stepsField = document.getElementById('steps');
+                    if (stepsField) {
+                        if (Array.isArray(data.improved_steps)) {
+                            stepsField.value = data.improved_steps.join('\n');
+                        } else {
+                            stepsField.value = data.improved_steps;
+                        }
+                    }
+                }
+                
+                if (data.improved_expected_result) {
+                    const expectedResultField = document.getElementById('expected_result');
+                    if (expectedResultField) {
+                        expectedResultField.value = data.improved_expected_result;
+                    }
+                }
+                
+                if (data.suggested_priority) {
+                    const priorityField = document.getElementById('priority');
+                    if (priorityField) {
+                        priorityField.value = data.suggested_priority;
+                    }
+                }
+                
+                if (data.suggested_module) {
+                    const moduleField = document.getElementById('module');
+                    if (moduleField) {
+                        moduleField.value = data.suggested_module;
+                    }
+                }
+            });
+        });
+    }
+});
+</script>
+
+{% endblock %}

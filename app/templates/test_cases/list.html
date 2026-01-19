@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- 页面标题和操作按钮 -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold">
+            <i class="bi bi-check-square me-2"></i>测试用例管理
+        </h2>
+        <a href="{{ url_for('test_cases.create_test_case') }}" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-1"></i>新建测试用例
+        </a>
+    </div>
+    
+    <!-- 统计卡片 -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                用例总数
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_cases }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-check-square-fill text-primary fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-secondary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-secondary text-uppercase mb-1">
+                                未执行
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ not_run_cases }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-clock text-secondary fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                通过
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ passed_cases }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-check-circle text-success fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-danger shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                                失败
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ failed_cases }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-x-circle text-danger fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 搜索表单 -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="bi bi-search me-1"></i>筛选测试用例
+        </div>
+        <div class="card-body">
+            <form method="GET" action="{{ url_for('test_cases.test_case_list') }}" class="row g-3">
+                <div class="col-md-4">
+                    {{ form.keyword.label(class="form-label") }}
+                    {{ form.keyword(class="form-control", placeholder="输入标题或描述关键词") }}
+                </div>
+                <div class="col-md-3">
+                    {{ form.status.label(class="form-label") }}
+                    {{ form.status(class="form-select") }}
+                </div>
+                <div class="col-md-3">
+                    {{ form.test_type.label(class="form-label") }}
+                    {{ form.test_type(class="form-select") }}
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    {{ form.submit(class="btn btn-primary w-100") }}
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- 测试用例列表 -->
+    <div class="card">
+        <div class="card-header">
+            <i class="bi bi-list-ul me-1"></i>测试用例列表
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th scope="col">ID</th>
+                            <th scope="col">标题</th>
+                            <th scope="col">状态</th>
+                            <th scope="col">优先级</th>
+                            <th scope="col">测试类型</th>
+                            <th scope="col">模块</th>
+                            <th scope="col">关联缺陷</th>
+                            <th scope="col">创建时间</th>
+                            <th scope="col">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for test_case in test_cases %}
+                        <tr>
+                            <th scope="row">{{ test_case.id }}</th>
+                            <td>
+                                <a href="{{ url_for('test_cases.test_case_detail', test_case_id=test_case.id) }}" class="text-decoration-none">
+                                    {{ test_case.title }}
+                                </a>
+                            </td>
+                            <td>
+                                <span class="badge bg-{{ test_case.get_status_class() }}">
+                                    {{ test_case.get_status_display() }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge bg-light text-dark border">
+                                    {{ test_case.get_priority_display() }}
+                                </span>
+                            </td>
+                            <td>{{ test_case.test_type }}</td>
+                            <td>{{ test_case.module }}</td>
+                            <td>
+                                <span class="badge bg-info">
+                                    {{ test_case.bug_count }}
+                                </span>
+                            </td>
+                            <td>{{ test_case.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td>
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <a href="{{ url_for('test_cases.test_case_detail', test_case_id=test_case.id) }}" 
+                                       class="btn btn-outline-primary">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    {% if test_case.created_by == current_user.id %}
+                                    <a href="{{ url_for('test_cases.edit_test_case', test_case_id=test_case.id) }}" 
+                                       class="btn btn-outline-warning">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="9" class="text-center py-4 text-muted">
+                                <i class="bi bi-check-square display-6 d-block mb-2"></i>
+                                暂无测试用例数据
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- 分页 -->
+            {% if pagination and pagination.pages > 1 %}
+            <nav aria-label="分页导航">
+                <ul class="pagination justify-content-center">
+                    {% if pagination.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('test_cases.test_case_list', page=pagination.prev_num, **request.args) }}">
+                            上一页
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">上一页</span>
+                    </li>
+                    {% endif %}
+                    
+                    {% for page_num in pagination.iter_pages(left_edge=2, left_current=2, right_current=3, right_edge=2) %}
+                        {% if page_num %}
+                            {% if page_num == pagination.page %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ page_num }}</span>
+                            </li>
+                            {% else %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('test_cases.test_case_list', page=page_num, **request.args) }}">
+                                    {{ page_num }}
+                                </a>
+                            </li>
+                            {% endif %}
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">...</span>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if pagination.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('test_cases.test_case_list', page=pagination.next_num, **request.args) }}">
+                            下一页
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">下一页</span>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,232 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- 页面标题和操作按钮 -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-0">缺陷 #{{ bug.id }}</h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item">
+                        <a href="{{ url_for('bugs.bug_list') }}">缺陷列表</a>
+                    </li>
+                    <li class="breadcrumb-item active">缺陷详情</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="btn-group" role="group">
+            <a href="{{ url_for('bugs.bug_list') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i>返回列表
+            </a>
+            {% if bug.created_by == current_user.id %}
+            <a href="{{ url_for('bugs.edit_bug', bug_id=bug.id) }}" class="btn btn-warning">
+                <i class="bi bi-pencil me-1"></i>编辑
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- 缺陷基本信息 -->
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- 缺陷内容卡片 -->
+            <div class="card mb-4">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">{{ bug.title }}</h5>
+                    <div>
+                        <span class="badge bg-light text-dark border me-1">
+                            {{ bug.get_priority_display() }}
+                        </span>
+                        <span class="badge {{ 'bg-danger' if bug.severity == 'critical' else 'bg-warning' if bug.severity == 'high' else 'bg-info' if bug.severity == 'medium' else 'bg-secondary' }}">
+                            {{ bug.get_severity_display() }}
+                        </span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <h6 class="text-muted mb-2">缺陷描述</h6>
+                        <div class="bg-light p-3 rounded">
+                            {{ bug.description | replace('\n', '<br>') | safe }}
+                        </div>
+                    </div>
+                    
+                    {% if bug.reproduction_steps %}
+                    <div class="mb-4">
+                        <h6 class="text-muted mb-2">复现步骤</h6>
+                        <div class="bg-light p-3 rounded">
+                            {{ bug.reproduction_steps | replace('\n', '<br>') | safe }}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if bug.expected_result %}
+                    <div class="mb-4">
+                        <h6 class="text-muted mb-2">预期结果</h6>
+                        <div class="bg-light p-3 rounded">
+                            {{ bug.expected_result | replace('\n', '<br>') | safe }}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if bug.actual_result %}
+                    <div class="mb-4">
+                        <h6 class="text-muted mb-2">实际结果</h6>
+                        <div class="bg-light p-3 rounded">
+                            {{ bug.actual_result | replace('\n', '<br>') | safe }}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer text-muted">
+                    创建于 {{ bug.created_at.strftime('%Y-%m-%d %H:%M:%S') }}
+                    {% if bug.updated_at and bug.updated_at != bug.created_at %}
+                    · 更新于 {{ bug.updated_at.strftime('%Y-%m-%d %H:%M:%S') }}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- 状态管理卡片 -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">缺陷状态</h6>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('bugs.update_bug_status', bug_id=bug.id) }}" class="mb-3">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <div class="input-group">
+                            <select name="status" class="form-select" onchange="this.form.submit()">
+                                <option value="new" {{ 'selected' if bug.status == 'new' }}>新建</option>
+                                <option value="in_progress" {{ 'selected' if bug.status == 'in_progress' }}>处理中</option>
+                                <option value="fixed" {{ 'selected' if bug.status == 'fixed' }}>已修复</option>
+                                <option value="closed" {{ 'selected' if bug.status == 'closed' }}>已关闭</option>
+                                <option value="reopened" {{ 'selected' if bug.status == 'reopened' }}>重新打开</option>
+                            </select>
+                            <button type="submit" class="btn btn-outline-primary">
+                                <i class="bi bi-check-lg"></i>
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-muted">当前状态：</span>
+                        <span class="badge {{ 'bg-secondary' if bug.status == 'new' else 'bg-primary' if bug.status == 'in_progress' else 'bg-success' if bug.status == 'fixed' else 'bg-dark' if bug.status == 'closed' else 'bg-warning' }}">
+                            {{ bug.get_status_display() }}
+                        </span>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-muted">缺陷类型：</span>
+                        <span>{{ bug.bug_type }}</span>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-muted">发现环境：</span>
+                        <span>{{ bug.environment }}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 分配管理卡片 -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">人员分配</h6>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('bugs.assign_bug', bug_id=bug.id) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <div class="mb-3">
+                            <label class="form-label">分配给</label>
+                            <select name="assignee_id" class="form-select">
+                                <option value="">未分配</option>
+                                {% for user in users %}
+                                <option value="{{ user.id }}" {{ 'selected' if bug.assigned_to == user.id }}>
+                                    {{ user.username }} ({{ user.email }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-person-check me-1"></i>分配
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div class="mt-3">
+                        <small class="text-muted">
+                            <i class="bi bi-info-circle me-1"></i>
+                            当前分配：
+                            {% if bug.assignee %}
+                                <strong>{{ bug.assignee.username }}</strong>
+                            {% else %}
+                                <span class="text-muted">未分配</span>
+                            {% endif %}
+                        </small>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 创建信息卡片 -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">创建信息</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-2">
+                        <small class="text-muted">创建人：</small>
+                        <div>{{ bug.creator.username if bug.creator else '未知' }}</div>
+                    </div>
+                    <div class="mb-2">
+                        <small class="text-muted">创建时间：</small>
+                        <div>{{ bug.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</div>
+                    </div>
+                    {% if bug.closed_at %}
+                    <div class="mb-2">
+                        <small class="text-muted">关闭时间：</small>
+                        <div>{{ bug.closed_at.strftime('%Y-%m-%d %H:%M:%S') }}</div>
+                    </div>
+                    {% endif %}
+                    
+                    <hr class="my-2">
+                    
+                    <!-- 危险操作 -->
+                    {% if bug.created_by == current_user.id %}
+                    <div class="mt-3">
+                        <button type="button" class="btn btn-outline-danger btn-sm w-100" 
+                                data-bs-toggle="modal" data-bs-target="#deleteModal">
+                            <i class="bi bi-trash me-1"></i>删除缺陷
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 删除确认模态框 -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">确认删除</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>确定要删除缺陷 #{{ bug.id }} 吗？</p>
+                <p class="text-danger"><strong>此操作不可撤销！</strong></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <form method="POST" action="{{ url_for('bugs.delete_bug', bug_id=bug.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-danger">确认删除</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
